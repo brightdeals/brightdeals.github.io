@@ -1,0 +1,29 @@
+name: Send instant deal alert
+
+on:
+  push:
+    branches: [main]
+    paths: [index.html]
+
+permissions:
+  contents: read
+
+jobs:
+  notify-subscribers:
+    if: ${{ secrets.BREVO_API_KEY != '' && secrets.BREVO_SENDER_EMAIL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Send alert for a newly added product card
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          BREVO_SENDER_EMAIL: ${{ secrets.BREVO_SENDER_EMAIL }}
+          BREVO_SENDER_NAME: BrightDeals
+          BREVO_ALERT_LIST_ID: '4'
+          SITE_URL: https://brightdeals.github.io/
+        run: node scripts/send-deal-alert.js
