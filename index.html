@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="BrightDeals finds standout Amazon deals on useful everyday products." />
+  <title>BrightDeals — better finds, less searching</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="pink-theme.css" />
+</head>
+<body>
+  <div class="announcement">✨ Fresh price drops, curated daily <a href="#deals">Shop today's picks →</a></div>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="BrightDeals home"><span class="brand-mark">B</span>Bright<span>Deals</span></a>
+    <button class="menu-button" aria-label="Open menu" aria-expanded="false">☰</button>
+    <nav aria-label="Main navigation">
+      <a href="#deals">Today's deals</a><a href="#categories">Categories</a><a href="#how-it-works">How it works</a>
+    </nav>
+    <a class="header-cta" href="#deals">Find a deal <span>↗</span></a>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">THE SMARTER WAY TO SHOP</p>
+        <h1>Good things.<br /><em>Great prices.</em></h1>
+        <p class="lede">We handpick the Amazon finds worth your attention, so you can skip the endless scrolling.</p>
+        <div class="hero-actions"><a class="button primary" href="#deals">Explore deals <span>→</span></a><a class="text-link" href="#how-it-works">How BrightDeals works</a></div>
+        <div class="proof"><div class="avatars"><i>J</i><i>M</i><i>A</i><i>S</i></div><p>Trusted by <strong>12,000+</strong> smart shoppers</p></div>
+      </div>
+      <div class="hero-art" aria-label="A selection of home, tech and lifestyle products">
+        <div class="sun"></div><div class="blob"></div>
+        <div class="floating card-one"><span>⌚</span><small>Tech finds</small></div>
+        <div class="floating card-two"><span>🪴</span><small>Home refresh</small></div>
+        <div class="floating card-three"><span>🎧</span><small>Everyday wins</small></div>
+        <div class="deal-sticker">UP TO<br /><b>50% OFF</b></div>
+      </div>
+    </section>
+
+    <section class="categories" id="categories"><div class="section-heading"><p class="eyebrow">SHOP BY MOOD</p><h2>Find your next favorite thing.</h2></div><div class="category-grid">
+      <a href="#deals" class="category orange"><span>⌂</span><b>Home & kitchen</b><small>Make space feel good</small><i>→</i></a>
+      <a href="#deals" class="category lavender"><span>◒</span><b>Tech & gadgets</b><small>Useful, never fussy</small><i>→</i></a>
+      <a href="#deals" class="category mint"><span>✽</span><b>Wellness</b><small>Feel-good essentials</small><i>→</i></a>
+      <a href="#deals" class="category yellow"><span>✦</span><b>Little luxuries</b><small>Joy in the details</small><i>→</i></a>
+    </div></section>
+
+    <section class="featured" id="deals"><div class="featured-intro"><div><p class="eyebrow">CURATED FOR TODAY</p><h2>Deals we’d actually buy.</h2></div><a class="text-link" href="#newsletter">Get daily picks <span>→</span></a></div>
+      <div class="product-grid">
+        <article class="product-card"><div class="product-visual cream"><span>☕</span><b>Amazon’s Choice</b></div><div class="product-info"><p class="product-category">HOME & KITCHEN</p><h3>Double-wall glass coffee set</h3><div><strong>$24.99</strong> <del>$39.99</del> <em>38% off</em></div><a href="https://www.amazon.com/" target="_blank" rel="sponsored noopener">See deal on Amazon <span>↗</span></a></div></article>
+        <article class="product-card"><div class="product-visual blue"><span>🎧</span><b>Limited time</b></div><div class="product-info"><p class="product-category">TECH & GADGETS</p><h3>Noise-canceling wireless earbuds</h3><div><strong>$49.00</strong> <del>$79.00</del> <em>38% off</em></div><a href="https://www.amazon.com/" target="_blank" rel="sponsored noopener">See deal on Amazon <span>↗</span></a></div></article>
+        <article class="product-card"><div class="product-visual peach"><span>🕯️</span><b>Best seller</b></div><div class="product-info"><p class="product-category">LITTLE LUXURIES</p><h3>Wood-wick candle, warm vanilla</h3><div><strong>$18.00</strong> <del>$28.00</del> <em>36% off</em></div><a href="https://www.amazon.com/" target="_blank" rel="sponsored noopener">See deal on Amazon <span>↗</span></a></div></article>
+      </div>
+      <p class="price-note">Prices and availability can change. Confirm the current price on Amazon before purchasing.</p>
+    </section>
+
+    <section class="how" id="how-it-works"><div class="how-art"><div>✦</div><span>Less searching.<br />More delight.</span></div><div class="how-copy"><p class="eyebrow">OUR FILTER IS SIMPLE</p><h2>Only the finds that earn a spot in your cart.</h2><p>Our tiny team scans for great value, solid reviews, and the kind of products you’ll use on repeat. No clutter, no gimmicks.</p><ol><li><b>01</b><span>We scout the deals</span></li><li><b>02</b><span>You choose your favorite</span></li><li><b>03</b><span>Amazon handles the rest</span></li></ol></div></section>
+
+    <section class="newsletter" id="newsletter"><p class="eyebrow">A LITTLE DEAL MAGIC, DAILY</p><h2>Inbox-worthy finds.<br /><em>Zero spam.</em></h2><form><label class="sr-only" for="email">Your email</label><input id="email" type="email" placeholder="you@email.com" required /><button class="button primary" type="submit">Send me deals →</button></form><small>By signing up, you agree to receive BrightDeals emails. Unsubscribe anytime.</small></section>
+  </main>
+  <footer><a class="brand" href="#top"><span class="brand-mark">B</span>Bright<span>Deals</span></a><p>© 2026 BrightDeals. As an Amazon Associate, we may earn from qualifying purchases.</p><div><a href="#">Privacy</a><a href="#">Disclosure</a><a href="#">Contact</a></div></footer>
+  <script src="script.js"></script>
+</body>
+</html>
