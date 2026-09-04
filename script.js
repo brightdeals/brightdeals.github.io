@@ -16,7 +16,20 @@ document.querySelectorAll('.promo-code').forEach((button) => {
     const code = button.dataset.code;
     if (!code) return;
     try {
-      await navigator.clipboard.writeText(code);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        const helper = document.createElement('textarea');
+        helper.value = code;
+        helper.setAttribute('readonly', '');
+        helper.style.position = 'fixed';
+        helper.style.opacity = '0';
+        document.body.appendChild(helper);
+        helper.select();
+        const copied = document.execCommand('copy');
+        helper.remove();
+        if (!copied) throw new Error('Copy unavailable');
+      }
       const label = button.querySelector('span');
       button.classList.add('copied');
       if (label) label.textContent = 'Copied ✓';
