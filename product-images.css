@@ -9,3 +9,4 @@
 .promo-code span { color: var(--orange); font-size: 11px; }
 .promo-code.copied { background: #f2fff8; border-style: solid; }
 .form-status{min-height:1.25em;margin:-3px 0 10px;font-size:12px;color:#6c5360}
+.honeypot,.signup-response{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
