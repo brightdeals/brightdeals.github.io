@@ -4,11 +4,31 @@ menuButton?.addEventListener('click', () => {
   const open = nav.classList.toggle('open');
   menuButton.setAttribute('aria-expanded', String(open));
 });
-document.querySelector('form')?.addEventListener('submit', (event) => {
+const signupForm = document.querySelector('.newsletter form');
+signupForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const button = event.currentTarget.querySelector('button');
-  button.textContent = 'You’re on the list ✓';
+  const button = signupForm.querySelector('button');
+  const status = document.querySelector('.form-status');
+  const originalLabel = 'Send me deals →';
   button.disabled = true;
+  button.textContent = 'Joining…';
+  if (status) status.textContent = '';
+
+  try {
+    const response = await fetch(signupForm.action, {
+      method: 'POST',
+      body: new FormData(signupForm),
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw new Error('Subscription request failed');
+    signupForm.reset();
+    button.textContent = 'You’re on the list ✓';
+    if (status) status.textContent = 'Thanks — check your inbox for the latest deals.';
+  } catch {
+    button.disabled = false;
+    button.textContent = originalLabel;
+    if (status) status.textContent = 'We couldn’t add you right now. Please try again.';
+  }
 });
 
 document.querySelectorAll('.promo-code').forEach((button) => {

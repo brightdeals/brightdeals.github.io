@@ -8,3 +8,4 @@
 .promo-code { width: 100%; border: 1px dashed var(--orange); border-radius: 3px; background: #fff7fa; color: var(--ink); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font: 700 12px 'DM Sans', sans-serif; margin: 0 0 4px; padding: 10px; }
 .promo-code span { color: var(--orange); font-size: 11px; }
 .promo-code.copied { background: #f2fff8; border-style: solid; }
+.form-status{min-height:1.25em;margin:-3px 0 10px;font-size:12px;color:#6c5360}
