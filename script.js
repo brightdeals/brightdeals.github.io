@@ -4,18 +4,19 @@ menuButton?.addEventListener('click', () => {
   const open = nav.classList.toggle('open');
   menuButton.setAttribute('aria-expanded', String(open));
 });
-const signupForm = document.querySelector('.newsletter form');
-signupForm?.addEventListener('submit', () => {
-  const button = signupForm.querySelector('button');
-  const status = document.querySelector('.form-status');
-  const originalLabel = 'Send me deals →';
-  button.disabled = true;
-  button.textContent = 'Check your inbox…';
-  if (status) status.textContent = 'Almost there — check your inbox to confirm your subscription.';
-  window.setTimeout(() => {
-    button.disabled = false;
-    button.textContent = originalLabel;
-  }, 2500);
+document.querySelectorAll('.brevo-signup').forEach((signupForm) => {
+  signupForm.addEventListener('submit', () => {
+    const button = signupForm.querySelector('button');
+    const status = signupForm.parentElement.querySelector('.form-status');
+    const originalLabel = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Check your inbox…';
+    if (status) status.textContent = signupForm.dataset.confirmation;
+    window.setTimeout(() => {
+      button.disabled = false;
+      button.textContent = originalLabel;
+    }, 2500);
+  });
 });
 
 document.querySelectorAll('.promo-code').forEach((button) => {

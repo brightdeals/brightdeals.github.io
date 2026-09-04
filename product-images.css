@@ -10,3 +10,4 @@
 .promo-code.copied { background: #f2fff8; border-style: solid; }
 .form-status{min-height:1.25em;margin:-3px 0 10px;font-size:12px;color:#6c5360}
 .honeypot,.signup-response{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.deal-alerts{background:#5b3852;color:#fff;text-align:center;padding:78px 24px}.deal-alerts .eyebrow{color:#ffd2df}.deal-alerts h2{font:50px Fraunces,serif;letter-spacing:-2.8px;line-height:.98;margin:0}.deal-alerts h2 em{color:#f2bdd0}.deal-alerts>p:not(.eyebrow):not(.form-status){max-width:520px;margin:18px auto 0;color:#f8e5ee;font-size:15px;line-height:1.5}.deal-alerts .form-status{color:#ffdbe7}.deal-alerts small{color:#ead2dd}@media(max-width:720px){.deal-alerts{padding:60px 20px}.deal-alerts h2{font-size:40px}}
