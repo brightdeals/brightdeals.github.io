@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   notify-subscribers:
-    if: ${{ secrets.BREVO_API_KEY != '' && secrets.BREVO_SENDER_EMAIL != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
