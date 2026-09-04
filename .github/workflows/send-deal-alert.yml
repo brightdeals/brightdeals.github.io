@@ -25,4 +25,6 @@ jobs:
           BREVO_SENDER_NAME: BrightDeals
           BREVO_ALERT_LIST_ID: '4'
           SITE_URL: https://brightdeals.github.io/
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: '-1004399602499'
         run: node scripts/send-deal-alert.js

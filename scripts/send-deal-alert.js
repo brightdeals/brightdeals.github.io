@@ -5,11 +5,8 @@ const senderEmail = process.env.BREVO_SENDER_EMAIL;
 const senderName = process.env.BREVO_SENDER_NAME || 'BrightDeals';
 const listId = Number(process.env.BREVO_ALERT_LIST_ID || '4');
 const siteUrl = process.env.SITE_URL || 'https://brightdeals.github.io/';
-
-if (!apiKey || !senderEmail) {
-  console.log('Deal alerts are not configured yet; no email was sent.');
-  process.exit(0);
-}
+const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+const telegramChatId = process.env.TELEGRAM_CHAT_ID;
 
 const diff = execFileSync('git', ['diff', '--unified=0', 'HEAD^', 'HEAD', '--', 'index.html'], { encoding: 'utf8' });
 const addedLines = diff.split('\n').filter((line) => line.startsWith('+') && !line.startsWith('+++')).map((line) => line.slice(1)).join('\n');
@@ -47,9 +44,31 @@ async function request(path, options = {}) {
 }
 
 (async () => {
-  const created = await request('/emailCampaigns', { method: 'POST', body: JSON.stringify(campaign) });
-  await request(`/emailCampaigns/${created.id}/sendNow`, { method: 'POST' });
-  console.log(`Sent instant deal alert campaign ${created.id} for ${title}.`);
+  const tasks = [];
+  if (apiKey && senderEmail) {
+    tasks.push((async () => {
+      const created = await request('/emailCampaigns', { method: 'POST', body: JSON.stringify(campaign) });
+      await request(`/emailCampaigns/${created.id}/sendNow`, { method: 'POST' });
+      console.log(`Sent instant email deal alert campaign ${created.id} for ${title}.`);
+    })());
+  } else {
+    console.log('Brevo email alerts are not configured; skipped email.');
+  }
+  if (telegramToken && telegramChatId) {
+    tasks.push((async () => {
+      const message = `✨ New BrightDeals drop!\n\n${title}\n\nView the current price and details: ${productUrl}\n\nAs an Amazon Associate, BrightDeals earns from qualifying purchases. Prices and availability can change.`;
+      const response = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ chat_id: telegramChatId, text: message, disable_web_page_preview: false }),
+      });
+      if (!response.ok) throw new Error(`Telegram API error ${response.status}: ${await response.text()}`);
+      console.log(`Sent Telegram deal alert for ${title}.`);
+    })());
+  } else {
+    console.log('Telegram alerts are not configured; skipped Telegram.');
+  }
+  await Promise.all(tasks);
 })().catch((error) => {
   console.error(error);
   process.exit(1);
