@@ -8,7 +8,14 @@ const siteUrl = process.env.SITE_URL || 'https://brightdeals.github.io/';
 const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
 const telegramChatId = process.env.TELEGRAM_CHAT_ID;
 
-const diff = execFileSync('git', ['diff', '--unified=0', 'HEAD^', 'HEAD', '--', 'index.html'], { encoding: 'utf8' });
+const targetCommit = process.env.ALERT_COMMIT || 'HEAD';
+if (!/^(?:HEAD|[a-f0-9]{40})$/.test(targetCommit)) throw new Error('Invalid alert commit');
+const diff = execFileSync('git', ['diff', '--unified=0', `${targetCommit}^`, targetCommit, '--', 'index.html'], { encoding: 'utf8' });
+const previousHtml = execFileSync('git', ['show', `${targetCommit}^:index.html`], { encoding: 'utf8' });
+const decodeHtml = (value) => value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+const cardUrl = (card) => decodeHtml(card.match(/<a href="([^"]+)"/)?.[1] || siteUrl);
+const previousUrls = new Set([...previousHtml.matchAll(/<article class="product-card">([\s\S]*?)<\/article>/g)].map((card) => cardUrl(card[1])));
+const skipAsins = (process.env.SKIP_ASINS || '').split(',').map((value) => value.trim()).filter(Boolean);
 const addedLines = diff.split('\n').filter((line) => line.startsWith('+') && !line.startsWith('+++')).map((line) => line.slice(1)).join('\n');
 const cards = [...addedLines.matchAll(/<article class="product-card">([\s\S]*?)<\/article>/g)];
 
@@ -17,9 +24,9 @@ if (!cards.length) {
   process.exit(0);
 }
 
-const latestCard = cards.at(-1)[1];
+async function sendCard(latestCard) {
 const title = latestCard.match(/<h3>([\s\S]*?)<\/h3>/)?.[1]?.replace(/<[^>]*>/g, '').trim() || 'A new BrightDeals pick';
-const productUrl = latestCard.match(/<a href="([^"]+)"/)?.[1] || siteUrl;
+const productUrl = cardUrl(latestCard);
 const escapeHtml = (value) => value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 const safeTitle = escapeHtml(title);
 const safeProductUrl = escapeHtml(productUrl);
@@ -43,7 +50,6 @@ async function request(path, options = {}) {
   return response.status === 204 ? null : response.json();
 }
 
-(async () => {
   const tasks = [];
   if (apiKey && senderEmail) {
     tasks.push((async () => {
@@ -69,6 +75,16 @@ async function request(path, options = {}) {
     console.log('Telegram alerts are not configured; skipped Telegram.');
   }
   await Promise.all(tasks);
+}
+
+(async () => {
+  const sentUrls = new Set();
+  for (const [, card] of cards) {
+    const url = cardUrl(card);
+    if (previousUrls.has(url) || sentUrls.has(url) || skipAsins.some((asin) => url.includes('/dp/' + asin))) continue;
+    await sendCard(card);
+    sentUrls.add(url);
+  }
 })().catch((error) => {
   console.error(error);
   process.exit(1);
