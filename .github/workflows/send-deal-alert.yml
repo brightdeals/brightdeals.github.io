@@ -1,6 +1,16 @@
 name: Send instant deal alert
 
 on:
+  workflow_dispatch:
+    inputs:
+      alert_commit:
+        description: Full commit SHA containing the products to notify
+        required: true
+        type: string
+      skip_asins:
+        description: Comma-separated ASINs already notified
+        required: false
+        type: string
   push:
     branches: [main]
     paths: [index.html]
@@ -14,12 +24,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Send alert for a newly added product card
+      - name: Send alerts for new product cards
         env:
+          ALERT_COMMIT: ${{ inputs.alert_commit }}
+          SKIP_ASINS: ${{ inputs.skip_asins }}
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           BREVO_SENDER_EMAIL: ${{ secrets.BREVO_SENDER_EMAIL }}
           BREVO_SENDER_NAME: BrightDeals
