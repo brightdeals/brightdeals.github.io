@@ -27,6 +27,7 @@ if (!cards.length) {
 async function sendCard(latestCard) {
 const title = latestCard.match(/<h3>([\s\S]*?)<\/h3>/)?.[1]?.replace(/<[^>]*>/g, '').trim() || 'A new BrightDeals pick';
 const productUrl = cardUrl(latestCard);
+const imageUrl = decodeHtml(latestCard.match(/<img[^>]+src="([^"]+)"/)?.[1] || '');
 const escapeHtml = (value) => value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 const safeTitle = escapeHtml(title);
 const safeProductUrl = escapeHtml(productUrl);
@@ -62,14 +63,26 @@ async function request(path, options = {}) {
   }
   if (telegramToken && telegramChatId) {
     tasks.push((async () => {
-      const message = `✨ New BrightDeals drop!\n\n${title}\n\nView the current price and details: ${productUrl}\n\nAs an Amazon Associate, BrightDeals earns from qualifying purchases. Prices and availability can change.`;
-      const response = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+      const message = `✨ New BrightDeals drop!\n\n${title}\n\nView the current price and details: ${productUrl}\n\n#ad`;
+      const method = imageUrl ? 'sendPhoto' : 'sendMessage';
+      const body = imageUrl
+        ? { chat_id: telegramChatId, photo: imageUrl, caption: message }
+        : { chat_id: telegramChatId, text: message, disable_web_page_preview: false };
+      let response = await fetch(`https://api.telegram.org/bot${telegramToken}/${method}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ chat_id: telegramChatId, text: message, disable_web_page_preview: false }),
+        body: JSON.stringify(body),
       });
+      if (!response.ok && imageUrl) {
+        console.warn(`Telegram could not load the product image for ${title}; sending the text alert instead.`);
+        response = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ chat_id: telegramChatId, text: message, disable_web_page_preview: false }),
+        });
+      }
       if (!response.ok) throw new Error(`Telegram API error ${response.status}: ${await response.text()}`);
-      console.log(`Sent Telegram deal alert for ${title}.`);
+      console.log(`Sent Telegram deal alert${imageUrl ? ' with product image' : ''} for ${title}.`);
     })());
   } else {
     console.log('Telegram alerts are not configured; skipped Telegram.');
