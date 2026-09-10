@@ -153,7 +153,8 @@ async function request(path, options = {}) {
   const sentUrls = new Set();
   for (const card of cards) {
     const url = cardUrl(card);
-    if ((!publishAllProducts && previousUrls.has(url)) || sentUrls.has(url) || skipAsins.some((asin) => url.includes('/dp/' + asin))) continue;
+    const retryAlert = card.includes('data-alert-retry="true"');
+    if ((!publishAllProducts && previousUrls.has(url) && !retryAlert) || sentUrls.has(url) || skipAsins.some((asin) => url.includes('/dp/' + asin))) continue;
     await sendCard(card);
     sentUrls.add(url);
   }
