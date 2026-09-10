@@ -21,6 +21,16 @@ const targetHtml = execFileSync('git', ['show', `${targetCommit}:index.html`], {
 const decodeHtml = (value) => value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 const cardUrl = (card) => decodeHtml(card.match(/<a href="([^"]+)"/)?.[1] || siteUrl);
 const productCardPattern = /<article class="product-card"[^>]*>([\s\S]*?)<\/article>/g;
+const textOnly = (value) => decodeHtml(value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim());
+const priceFromAttribute = (card, name) => card.match(new RegExp(`${name}="([^"]+)"`))?.[1] || '';
+const priceDetails = (card) => {
+  const originalPrice = priceFromAttribute(card, 'data-original-price') || textOnly(card.match(/<s>([\s\S]*?)<\/s>/)?.[1] || '');
+  const salePrice = priceFromAttribute(card, 'data-sale-price') || textOnly(card.match(/<div class="final-price">[\s\S]*?<strong>([\s\S]*?)<\/strong>/)?.[1] || '');
+  if (!originalPrice || !salePrice) {
+    throw new Error('Every new product card needs data-original-price and data-sale-price before it can be posted to Telegram or Facebook.');
+  }
+  return { originalPrice, salePrice };
+};
 const previousUrls = new Set([...previousHtml.matchAll(productCardPattern)].map((card) => cardUrl(card[1])));
 const skipAsins = (process.env.SKIP_ASINS || '').split(',').map((value) => value.trim()).filter(Boolean);
 const addedLines = diff.split('\n').filter((line) => line.startsWith('+') && !line.startsWith('+++')).map((line) => line.slice(1)).join('\n');
@@ -37,8 +47,7 @@ async function sendCard(latestCard) {
 const title = latestCard.match(/<h3>([\s\S]*?)<\/h3>/)?.[1]?.replace(/<[^>]*>/g, '').trim() || 'A new BrightDeals pick';
 const productUrl = cardUrl(latestCard);
 const imageUrl = decodeHtml(latestCard.match(/<img[^>]+src="([^"]+)"/)?.[1] || '');
-const originalPrice = latestCard.match(/data-original-price="([^"]+)"/)?.[1] || '';
-const salePrice = latestCard.match(/data-sale-price="([^"]+)"/)?.[1] || '';
+const { originalPrice, salePrice } = priceDetails(latestCard);
 const escapeHtml = (value) => value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 const safeTitle = escapeHtml(title);
 const safeProductUrl = escapeHtml(productUrl);
@@ -74,9 +83,7 @@ async function request(path, options = {}) {
   }
   if (telegramToken && telegramChatId) {
     tasks.push((async () => {
-      const priceLines = originalPrice && salePrice
-        ? `\n\nOriginal price: ${originalPrice}\nNew price: ${salePrice}`
-        : '';
+      const priceLines = `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
       const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nView the deal: ${productUrl}\n\n#ad`;
       const method = imageUrl ? 'sendPhoto' : 'sendMessage';
       const body = imageUrl
@@ -105,9 +112,7 @@ async function request(path, options = {}) {
   }
   if (facebookPublishingEnabled && facebookPageId && facebookToken) {
     tasks.push((async () => {
-      const priceLines = originalPrice && salePrice
-        ? `\n\nOriginal price: ${originalPrice}\nDeal price: ${salePrice}`
-        : '';
+      const priceLines = `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
       const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nSee the current price and details: ${productUrl}\n\n#ad`;
       const response = await fetch(`https://graph.facebook.com/v26.0/${facebookPageId}/feed`, {
         method: 'POST',
