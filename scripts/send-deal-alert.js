@@ -123,18 +123,22 @@ async function request(path, options = {}) {
   }
   if (facebookPublishingEnabled && facebookPageId && facebookToken) {
     tasks.push((async () => {
-      const priceLines = originalPrice === salePrice
-        ? `\n\nCurrent price: ${salePrice}`
-        : `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
-      const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nSee it on BrightDeals: ${brightDealsUrl}\n\n#ad`;
-      const response = await fetch(`https://graph.facebook.com/v26.0/${facebookPageId}/feed`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ message, link: brightDealsUrl, access_token: facebookToken }),
-      });
-      if (!response.ok) throw new Error(`Facebook Graph API error ${response.status}: ${await response.text()}`);
-      const created = await response.json();
-      console.log(`Published Facebook deal alert ${created.id || ''} for ${title}.`);
+      try {
+        const priceLines = originalPrice === salePrice
+          ? `\n\nCurrent price: ${salePrice}`
+          : `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
+        const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nSee it on BrightDeals: ${brightDealsUrl}\n\n#ad`;
+        const response = await fetch(`https://graph.facebook.com/v26.0/${facebookPageId}/feed`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ message, link: brightDealsUrl, access_token: facebookToken }),
+        });
+        if (!response.ok) throw new Error(`Facebook Graph API error ${response.status}: ${await response.text()}`);
+        const created = await response.json();
+        console.log(`Published Facebook deal alert ${created.id || ''} for ${title}.`);
+      } catch (error) {
+        console.error(`Facebook alert skipped for ${title}: ${error.message}`);
+      }
     })());
   } else if (facebookToken && facebookPageId) {
     console.log('Facebook deal alerts are connected but disabled; skipped Facebook.');

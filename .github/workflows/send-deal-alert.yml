@@ -58,5 +58,5 @@ jobs:
           TELEGRAM_CHAT_ID: '-1004399602499'
           FACEBOOK_PAGE_ID: '1287326714470592'
           FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
-          FACEBOOK_PUBLISHING_ENABLED: ${{ inputs.publish_to_facebook || 'true' }}
+          FACEBOOK_PUBLISHING_ENABLED: ${{ github.event_name == 'push' && 'true' || inputs.publish_to_facebook && 'true' || 'false' }}
         run: node scripts/send-deal-alert.js
