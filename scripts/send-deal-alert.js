@@ -4,6 +4,7 @@ const apiKey = process.env.BREVO_API_KEY;
 const senderEmail = process.env.BREVO_SENDER_EMAIL;
 const senderName = process.env.BREVO_SENDER_NAME || 'BrightDeals';
 const listId = Number(process.env.BREVO_ALERT_LIST_ID || '4');
+const emailPublishingEnabled = process.env.EMAIL_PUBLISHING_ENABLED === 'true';
 const siteUrl = process.env.SITE_URL || 'https://brightdeals.github.io/';
 const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
 const telegramChatId = process.env.TELEGRAM_CHAT_ID;
@@ -58,7 +59,7 @@ async function request(path, options = {}) {
 }
 
   const tasks = [];
-  if (apiKey && senderEmail) {
+  if (emailPublishingEnabled && apiKey && senderEmail) {
     tasks.push((async () => {
       const created = await request('/emailCampaigns', { method: 'POST', body: JSON.stringify(campaign) });
       await request(`/emailCampaigns/${created.id}/sendNow`, { method: 'POST' });
@@ -93,6 +94,8 @@ async function request(path, options = {}) {
       if (!response.ok) throw new Error(`Telegram API error ${response.status}: ${await response.text()}`);
       console.log(`Sent Telegram deal alert${imageUrl ? ' with product image' : ''} for ${title}.`);
     })());
+  } else if (!emailPublishingEnabled) {
+    console.log('Email alerts are disabled for this run; skipped email.');
   } else {
     console.log('Telegram alerts are not configured; skipped Telegram.');
   }
