@@ -11,6 +11,11 @@ on:
         description: Comma-separated ASINs already notified
         required: false
         type: string
+      publish_to_facebook:
+        description: Publish these deal alerts to the BrightDeals Facebook Page
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main]
     paths: [index.html]
@@ -36,7 +41,10 @@ jobs:
           BREVO_SENDER_EMAIL: ${{ secrets.BREVO_SENDER_EMAIL }}
           BREVO_SENDER_NAME: BrightDeals
           BREVO_ALERT_LIST_ID: '4'
-          SITE_URL: https://brightdeals.github.io/
+          SITE_URL: https://brightdeal.net/
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: '-1004399602499'
+          FACEBOOK_PAGE_ID: '1287326714470592'
+          FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+          FACEBOOK_PUBLISHING_ENABLED: ${{ inputs.publish_to_facebook || 'false' }}
         run: node scripts/send-deal-alert.js

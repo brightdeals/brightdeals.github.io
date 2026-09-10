@@ -7,6 +7,9 @@ const listId = Number(process.env.BREVO_ALERT_LIST_ID || '4');
 const siteUrl = process.env.SITE_URL || 'https://brightdeals.github.io/';
 const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
 const telegramChatId = process.env.TELEGRAM_CHAT_ID;
+const facebookPageId = process.env.FACEBOOK_PAGE_ID;
+const facebookToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+const facebookPublishingEnabled = process.env.FACEBOOK_PUBLISHING_ENABLED === 'true';
 
 const targetCommit = process.env.ALERT_COMMIT || 'HEAD';
 if (!/^(?:HEAD|[a-f0-9]{40})$/.test(targetCommit)) throw new Error('Invalid alert commit');
@@ -91,6 +94,26 @@ async function request(path, options = {}) {
     })());
   } else {
     console.log('Telegram alerts are not configured; skipped Telegram.');
+  }
+  if (facebookPublishingEnabled && facebookPageId && facebookToken) {
+    tasks.push((async () => {
+      const priceLines = originalPrice && salePrice
+        ? `\n\nOriginal price: ${originalPrice}\nDeal price: ${salePrice}`
+        : '';
+      const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nSee the current price and details: ${productUrl}\n\n#ad`;
+      const response = await fetch(`https://graph.facebook.com/v26.0/${facebookPageId}/feed`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ message, link: productUrl, access_token: facebookToken }),
+      });
+      if (!response.ok) throw new Error(`Facebook Graph API error ${response.status}: ${await response.text()}`);
+      const created = await response.json();
+      console.log(`Published Facebook deal alert ${created.id || ''} for ${title}.`);
+    })());
+  } else if (facebookToken && facebookPageId) {
+    console.log('Facebook deal alerts are connected but disabled; skipped Facebook.');
+  } else {
+    console.log('Facebook deal alerts are not configured; skipped Facebook.');
   }
   await Promise.all(tasks);
 }
