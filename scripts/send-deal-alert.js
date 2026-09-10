@@ -17,10 +17,11 @@ const diff = execFileSync('git', ['diff', '--unified=0', `${targetCommit}^`, tar
 const previousHtml = execFileSync('git', ['show', `${targetCommit}^:index.html`], { encoding: 'utf8' });
 const decodeHtml = (value) => value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 const cardUrl = (card) => decodeHtml(card.match(/<a href="([^"]+)"/)?.[1] || siteUrl);
-const previousUrls = new Set([...previousHtml.matchAll(/<article class="product-card">([\s\S]*?)<\/article>/g)].map((card) => cardUrl(card[1])));
+const productCardPattern = /<article class="product-card"[^>]*>([\s\S]*?)<\/article>/g;
+const previousUrls = new Set([...previousHtml.matchAll(productCardPattern)].map((card) => cardUrl(card[1])));
 const skipAsins = (process.env.SKIP_ASINS || '').split(',').map((value) => value.trim()).filter(Boolean);
 const addedLines = diff.split('\n').filter((line) => line.startsWith('+') && !line.startsWith('+++')).map((line) => line.slice(1)).join('\n');
-const cards = [...addedLines.matchAll(/<article class="product-card">([\s\S]*?)<\/article>/g)];
+const cards = [...addedLines.matchAll(productCardPattern)];
 
 if (!cards.length) {
   console.log('No new product card was added; no deal alert was sent.');
