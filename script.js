@@ -51,13 +51,102 @@ document.querySelectorAll('.promo-code').forEach((button) => {
   });
 });
 
+const slugify = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+const detailModal = document.createElement('div');
+detailModal.className = 'deal-modal';
+detailModal.hidden = true;
+detailModal.innerHTML = `
+  <div class="deal-modal-backdrop" data-close-detail></div>
+  <section class="deal-modal-card" role="dialog" aria-modal="true" aria-labelledby="deal-modal-title" tabindex="-1">
+    <button class="deal-modal-close" type="button" aria-label="Close product details" data-close-detail>&times;</button>
+    <div class="deal-modal-visual"><img alt=""></div>
+    <div class="deal-modal-content">
+      <p class="deal-modal-category"></p>
+      <h2 id="deal-modal-title"></h2>
+      <div class="deal-modal-price"></div>
+      <p class="deal-modal-detail"></p>
+      <p class="deal-modal-promo" hidden></p>
+      <a class="deal-modal-cta" target="_blank" rel="sponsored noopener">Get deal <span aria-hidden="true">↗</span></a>
+      <small>Prices and availability can change on Amazon.</small>
+    </div>
+  </section>`;
+document.body.appendChild(detailModal);
+
+let lastFocusedElement;
+const modalCard = detailModal.querySelector('.deal-modal-card');
+const modalImage = detailModal.querySelector('.deal-modal-visual img');
+const modalCategory = detailModal.querySelector('.deal-modal-category');
+const modalTitle = detailModal.querySelector('#deal-modal-title');
+const modalPrice = detailModal.querySelector('.deal-modal-price');
+const modalDetail = detailModal.querySelector('.deal-modal-detail');
+const modalPromo = detailModal.querySelector('.deal-modal-promo');
+const modalCta = detailModal.querySelector('.deal-modal-cta');
+
+const closeDealDetails = () => {
+  if (detailModal.hidden) return;
+  detailModal.hidden = true;
+  document.body.classList.remove('modal-open');
+  lastFocusedElement?.focus();
+};
+
+const openDealDetails = (card) => {
+  const image = card.querySelector('.product-visual img');
+  const category = card.querySelector('.product-category');
+  const title = card.querySelector('h3');
+  const price = card.querySelector('.final-price');
+  const detail = card.querySelector('.product-detail');
+  const promo = card.querySelector('.promo-code');
+  const link = card.querySelector('.product-info a[href]');
+  if (!title || !link) return;
+
+  lastFocusedElement = document.activeElement;
+  modalImage.src = image?.currentSrc || image?.src || '';
+  modalImage.alt = image?.alt || title.textContent.trim();
+  modalCategory.textContent = category?.textContent.trim() || 'BrightDeals pick';
+  modalTitle.textContent = title.textContent.trim();
+  modalPrice.innerHTML = price?.innerHTML || '';
+  modalDetail.textContent = detail?.textContent.trim() || 'See the latest product details and availability on Amazon.';
+  const code = promo?.dataset.code;
+  modalPromo.hidden = !code;
+  modalPromo.textContent = code ? `Promo code: ${code}` : '';
+  modalCta.href = link.href;
+  detailModal.hidden = false;
+  document.body.classList.add('modal-open');
+  modalCard.focus();
+};
+
+detailModal.addEventListener('click', (event) => {
+  if (event.target.closest('[data-close-detail]')) closeDealDetails();
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeDealDetails();
+});
+
+document.querySelectorAll('.product-card').forEach((card) => {
+  const title = card.querySelector('h3')?.textContent.trim();
+  if (!title) return;
+  card.tabIndex = 0;
+  card.setAttribute('role', 'button');
+  card.setAttribute('aria-label', `View details for ${title}`);
+  card.addEventListener('click', (event) => {
+    if (event.target.closest('a, button, input, textarea, select, label')) return;
+    openDealDetails(card);
+  });
+  card.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    openDealDetails(card);
+  });
+});
+
 const requestedDeal = new URLSearchParams(window.location.search).get('deal');
 if (requestedDeal) {
-  const slugify = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const dealCard = [...document.querySelectorAll('.product-card')].find((card) =>
     slugify(card.querySelector('h3')?.textContent || '') === requestedDeal
   );
   if (dealCard) {
-    window.requestAnimationFrame(() => dealCard.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    window.requestAnimationFrame(() => openDealDetails(dealCard));
   }
 }
