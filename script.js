@@ -50,3 +50,14 @@ document.querySelectorAll('.promo-code').forEach((button) => {
     }
   });
 });
+
+const requestedDeal = new URLSearchParams(window.location.search).get('deal');
+if (requestedDeal) {
+  const slugify = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const dealCard = [...document.querySelectorAll('.product-card')].find((card) =>
+    slugify(card.querySelector('h3')?.textContent || '') === requestedDeal
+  );
+  if (dealCard) {
+    window.requestAnimationFrame(() => dealCard.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+  }
+}

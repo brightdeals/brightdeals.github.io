@@ -20,6 +20,13 @@ const previousHtml = execFileSync('git', ['show', `${targetCommit}^:index.html`]
 const targetHtml = execFileSync('git', ['show', `${targetCommit}:index.html`], { encoding: 'utf8' });
 const decodeHtml = (value) => value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 const cardUrl = (card) => decodeHtml(card.match(/<a href="([^"]+)"/)?.[1] || siteUrl);
+const slugify = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const dealPageUrl = (title) => {
+  const url = new URL(siteUrl);
+  url.searchParams.set('deal', slugify(title));
+  url.hash = 'deals';
+  return url.toString();
+};
 const productCardPattern = /<article class="product-card"[^>]*>([\s\S]*?)<\/article>/g;
 const textOnly = (value) => decodeHtml(value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim());
 const priceFromAttribute = (card, name) => card.match(new RegExp(`${name}="([^"]+)"`))?.[1] || '';
@@ -47,6 +54,7 @@ if (!cards.length) {
 async function sendCard(latestCard) {
 const title = latestCard.match(/<h3>([\s\S]*?)<\/h3>/)?.[1]?.replace(/<[^>]*>/g, '').trim() || 'A new BrightDeals pick';
 const productUrl = cardUrl(latestCard);
+const brightDealsUrl = dealPageUrl(title);
 const imageUrl = decodeHtml(latestCard.match(/<img[^>]+src="([^"]+)"/)?.[1] || '');
 const { originalPrice, salePrice } = priceDetails(latestCard);
 const escapeHtml = (value) => value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -87,7 +95,7 @@ async function request(path, options = {}) {
       const priceLines = originalPrice === salePrice
         ? `\n\nCurrent price: ${salePrice}`
         : `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
-      const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nView the deal: ${productUrl}\n\n#ad`;
+      const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nSee it on BrightDeals: ${brightDealsUrl}\n\n#ad`;
       const method = imageUrl ? 'sendPhoto' : 'sendMessage';
       const body = imageUrl
         ? { chat_id: telegramChatId, photo: imageUrl, caption: message }
@@ -118,11 +126,11 @@ async function request(path, options = {}) {
       const priceLines = originalPrice === salePrice
         ? `\n\nCurrent price: ${salePrice}`
         : `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
-      const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nSee the current price and details: ${productUrl}\n\n#ad`;
+      const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nSee it on BrightDeals: ${brightDealsUrl}\n\n#ad`;
       const response = await fetch(`https://graph.facebook.com/v26.0/${facebookPageId}/feed`, {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ message, link: productUrl, access_token: facebookToken }),
+        body: new URLSearchParams({ message, link: brightDealsUrl, access_token: facebookToken }),
       });
       if (!response.ok) throw new Error(`Facebook Graph API error ${response.status}: ${await response.text()}`);
       const created = await response.json();
