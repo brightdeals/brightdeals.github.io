@@ -3,6 +3,7 @@
 .guide-page .site-header { background: rgba(255, 250, 253, .94); }
 .guide-hero { display:grid; grid-template-columns:1.1fr .9fr; max-width:1180px; margin:0 auto; min-height:500px; padding:72px 44px 60px; gap:36px; align-items:center; }
 .guide-hero-copy h1, .guide-intro h2, .pick-copy h2 { font-family:Fraunces, Georgia, serif; letter-spacing:-.055em; }
+.edit-topic-menu{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font:700 .66rem/1.3 'DM Mono',monospace;letter-spacing:.09em}.edit-topic-menu span{color:#9a617d}.edit-topic-menu span::after{content:'·';margin-left:7px;color:#d94679}.edit-topic-menu a{padding:6px 8px;border-radius:999px;color:#b53868;text-decoration:none}.edit-topic-menu a:hover,.edit-topic-menu a.active{background:#ffd9e7;color:#842b50}.edit-topic-menu a.active{pointer-events:none}
 .guide-hero-copy h1 { max-width:720px; margin:12px 0 18px; font-size:clamp(3rem, 6vw, 5.8rem); line-height:.95; }
 .guide-hero-copy > p:not(.eyebrow) { max-width:570px; font-size:1.15rem; line-height:1.65; }
 .guide-meta { display:flex; flex-wrap:wrap; gap:12px; margin-top:26px; font:700 .7rem/1.4 'DM Mono', monospace; letter-spacing:.08em; }
