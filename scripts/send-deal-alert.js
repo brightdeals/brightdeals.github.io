@@ -11,21 +11,25 @@ const telegramChatId = process.env.TELEGRAM_CHAT_ID;
 const facebookPageId = process.env.FACEBOOK_PAGE_ID;
 const facebookToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
 const facebookPublishingEnabled = process.env.FACEBOOK_PUBLISHING_ENABLED === 'true';
+const publishAllProducts = process.env.PUBLISH_ALL_PRODUCTS === 'true';
 
 const targetCommit = process.env.ALERT_COMMIT || 'HEAD';
 if (!/^(?:HEAD|[a-f0-9]{40})$/.test(targetCommit)) throw new Error('Invalid alert commit');
 const diff = execFileSync('git', ['diff', '--unified=0', `${targetCommit}^`, targetCommit, '--', 'index.html'], { encoding: 'utf8' });
 const previousHtml = execFileSync('git', ['show', `${targetCommit}^:index.html`], { encoding: 'utf8' });
+const targetHtml = execFileSync('git', ['show', `${targetCommit}:index.html`], { encoding: 'utf8' });
 const decodeHtml = (value) => value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 const cardUrl = (card) => decodeHtml(card.match(/<a href="([^"]+)"/)?.[1] || siteUrl);
 const productCardPattern = /<article class="product-card"[^>]*>([\s\S]*?)<\/article>/g;
 const previousUrls = new Set([...previousHtml.matchAll(productCardPattern)].map((card) => cardUrl(card[1])));
 const skipAsins = (process.env.SKIP_ASINS || '').split(',').map((value) => value.trim()).filter(Boolean);
 const addedLines = diff.split('\n').filter((line) => line.startsWith('+') && !line.startsWith('+++')).map((line) => line.slice(1)).join('\n');
-const cards = [...addedLines.matchAll(productCardPattern)];
+const cards = publishAllProducts
+  ? [...targetHtml.matchAll(productCardPattern)]
+  : [...addedLines.matchAll(productCardPattern)];
 
 if (!cards.length) {
-  console.log('No new product card was added; no deal alert was sent.');
+  console.log(publishAllProducts ? 'No product cards were found; no deal alert was sent.' : 'No new product card was added; no deal alert was sent.');
   process.exit(0);
 }
 
@@ -123,10 +127,11 @@ async function request(path, options = {}) {
 }
 
 (async () => {
+  if (publishAllProducts) console.log(`Publishing ${cards.length} listed products to the selected channels.`);
   const sentUrls = new Set();
   for (const [, card] of cards) {
     const url = cardUrl(card);
-    if (previousUrls.has(url) || sentUrls.has(url) || skipAsins.some((asin) => url.includes('/dp/' + asin))) continue;
+    if ((!publishAllProducts && previousUrls.has(url)) || sentUrls.has(url) || skipAsins.some((asin) => url.includes('/dp/' + asin))) continue;
     await sendCard(card);
     sentUrls.add(url);
   }
