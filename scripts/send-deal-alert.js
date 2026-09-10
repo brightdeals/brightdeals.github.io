@@ -34,9 +34,10 @@ const priceDetails = (card) => {
 const previousUrls = new Set([...previousHtml.matchAll(productCardPattern)].map((card) => cardUrl(card[1])));
 const skipAsins = (process.env.SKIP_ASINS || '').split(',').map((value) => value.trim()).filter(Boolean);
 const addedLines = diff.split('\n').filter((line) => line.startsWith('+') && !line.startsWith('+++')).map((line) => line.slice(1)).join('\n');
-const cards = publishAllProducts
+const cards = (publishAllProducts
   ? [...targetHtml.matchAll(productCardPattern)]
-  : [...addedLines.matchAll(productCardPattern)];
+  : [...addedLines.matchAll(productCardPattern)])
+  .map((match) => match[0]);
 
 if (!cards.length) {
   console.log(publishAllProducts ? 'No product cards were found; no deal alert was sent.' : 'No new product card was added; no deal alert was sent.');
@@ -138,7 +139,7 @@ async function request(path, options = {}) {
 (async () => {
   if (publishAllProducts) console.log(`Publishing ${cards.length} listed products to the selected channels.`);
   const sentUrls = new Set();
-  for (const [, card] of cards) {
+  for (const card of cards) {
     const url = cardUrl(card);
     if ((!publishAllProducts && previousUrls.has(url)) || sentUrls.has(url) || skipAsins.some((asin) => url.includes('/dp/' + asin))) continue;
     await sendCard(card);
