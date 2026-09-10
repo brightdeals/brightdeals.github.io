@@ -1,5 +1,12 @@
 const menuButton = document.querySelector('.menu-button');
 const nav = document.querySelector('nav');
+if (nav && !nav.querySelector('[data-guide-link]')) {
+  const guideLink = document.createElement('a');
+  guideLink.href = 'cordless-vacuum-edit.html';
+  guideLink.dataset.guideLink = 'true';
+  guideLink.textContent = 'The Edit';
+  nav.appendChild(guideLink);
+}
 menuButton?.addEventListener('click', () => {
   const open = nav.classList.toggle('open');
   menuButton.setAttribute('aria-expanded', String(open));
