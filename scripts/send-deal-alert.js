@@ -83,7 +83,9 @@ async function request(path, options = {}) {
   }
   if (telegramToken && telegramChatId) {
     tasks.push((async () => {
-      const priceLines = `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
+      const priceLines = originalPrice === salePrice
+        ? `\n\nCurrent price: ${salePrice}`
+        : `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
       const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nView the deal: ${productUrl}\n\n#ad`;
       const method = imageUrl ? 'sendPhoto' : 'sendMessage';
       const body = imageUrl
@@ -112,7 +114,9 @@ async function request(path, options = {}) {
   }
   if (facebookPublishingEnabled && facebookPageId && facebookToken) {
     tasks.push((async () => {
-      const priceLines = `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
+      const priceLines = originalPrice === salePrice
+        ? `\n\nCurrent price: ${salePrice}`
+        : `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
       const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nSee the current price and details: ${productUrl}\n\n#ad`;
       const response = await fetch(`https://graph.facebook.com/v26.0/${facebookPageId}/feed`, {
         method: 'POST',
