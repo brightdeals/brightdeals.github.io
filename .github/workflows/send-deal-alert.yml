@@ -14,7 +14,7 @@ on:
       publish_to_facebook:
         description: Publish these deal alerts to the BrightDeals Facebook Page
         required: false
-        default: false
+        default: true
         type: boolean
   push:
     branches: [main]
@@ -46,5 +46,5 @@ jobs:
           TELEGRAM_CHAT_ID: '-1004399602499'
           FACEBOOK_PAGE_ID: '1287326714470592'
           FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
-          FACEBOOK_PUBLISHING_ENABLED: ${{ inputs.publish_to_facebook || 'false' }}
+          FACEBOOK_PUBLISHING_ENABLED: ${{ inputs.publish_to_facebook || 'true' }}
         run: node scripts/send-deal-alert.js
