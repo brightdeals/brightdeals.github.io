@@ -1,6 +1,20 @@
 .product-visual { overflow: hidden; }
 .product-visual img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
+/* Current Amazon deal photos for the newest catalog items. */
+.product-grid > .product-card:nth-child(-n+10) .product-visual { background-color: #fff; background-position: center; background-repeat: no-repeat; background-size: contain; }
+.product-grid > .product-card:nth-child(-n+10) .product-visual > span { display: none; }
+.product-grid > .product-card:nth-child(1) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B0G2D1R15Q.01.LZZZZZZZ.jpg'); }
+.product-grid > .product-card:nth-child(2) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B0GVTPKJVT.01.LZZZZZZZ.jpg'); }
+.product-grid > .product-card:nth-child(3) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B0DCBB2YTR.01.LZZZZZZZ.jpg'); }
+.product-grid > .product-card:nth-child(4) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B000UXZQ42.01.LZZZZZZZ.jpg'); }
+.product-grid > .product-card:nth-child(5) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B085TFF7M1.01.LZZZZZZZ.jpg'); }
+.product-grid > .product-card:nth-child(6) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B0CNTRVZPW.01.LZZZZZZZ.jpg'); }
+.product-grid > .product-card:nth-child(7) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B0B89P16MC.01.LZZZZZZZ.jpg'); }
+.product-grid > .product-card:nth-child(8) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B077T6F98M.01.LZZZZZZZ.jpg'); }
+.product-grid > .product-card:nth-child(9) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B0CM44GT41.01.LZZZZZZZ.jpg'); }
+.product-grid > .product-card:nth-child(10) .product-visual { background-image: url('https://images-na.ssl-images-amazon.com/images/P/B0CCJ3SRB9.01.LZZZZZZZ.jpg'); }
+
 @media (min-width: 721px) { .product-grid { grid-template-columns: repeat(4, 1fr); } }
 
 .final-price { display: grid; gap: 3px; margin: 0 0 11px; }
