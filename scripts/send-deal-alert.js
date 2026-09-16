@@ -128,10 +128,14 @@ async function request(path, options = {}) {
           ? `\n\nCurrent price: ${salePrice}`
           : `\n\nOriginal price: ${originalPrice}\nDiscounted price: ${salePrice}`;
         const message = `✨ New BrightDeals drop!\n\n${title}${priceLines}\n\nSee it on BrightDeals: ${brightDealsUrl}\n\n#ad`;
-        const response = await fetch(`https://graph.facebook.com/v26.0/${facebookPageId}/feed`, {
+        const endpoint = imageUrl ? `https://graph.facebook.com/v26.0/${facebookPageId}/photos` : `https://graph.facebook.com/v26.0/${facebookPageId}/feed`;
+        const payload = imageUrl
+          ? { url: imageUrl, caption: message, access_token: facebookToken }
+          : { message, link: brightDealsUrl, access_token: facebookToken };
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'content-type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ message, link: brightDealsUrl, access_token: facebookToken }),
+          body: new URLSearchParams(payload),
         });
         if (!response.ok) throw new Error(`Facebook Graph API error ${response.status}: ${await response.text()}`);
         const created = await response.json();
