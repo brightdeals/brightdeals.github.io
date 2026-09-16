@@ -18,6 +18,7 @@ if (!/^(?:HEAD|[a-f0-9]{40})$/.test(targetCommit)) throw new Error('Invalid aler
 const diff = execFileSync('git', ['diff', '--unified=0', `${targetCommit}^`, targetCommit, '--', 'index.html'], { encoding: 'utf8' });
 const previousHtml = execFileSync('git', ['show', `${targetCommit}^:index.html`], { encoding: 'utf8' });
 const targetHtml = execFileSync('git', ['show', `${targetCommit}:index.html`], { encoding: 'utf8' });
+const republishLatest = targetHtml.includes('data-republish-latest="true"');
 const decodeHtml = (value) => value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 const cardUrl = (card) => decodeHtml(card.match(/<a href="([^"]+)"/)?.[1] || siteUrl);
 const slugify = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -41,10 +42,11 @@ const priceDetails = (card) => {
 const previousUrls = new Set([...previousHtml.matchAll(productCardPattern)].map((card) => cardUrl(card[1])));
 const skipAsins = (process.env.SKIP_ASINS || '').split(',').map((value) => value.trim()).filter(Boolean);
 const addedLines = diff.split('\n').filter((line) => line.startsWith('+') && !line.startsWith('+++')).map((line) => line.slice(1)).join('\n');
-const cards = (publishAllProducts
+const cards = (publishAllProducts || republishLatest
   ? [...targetHtml.matchAll(productCardPattern)]
   : [...addedLines.matchAll(productCardPattern)])
-  .map((match) => match[0]);
+  .map((match) => match[0])
+  .slice(0, republishLatest ? 20 : undefined);
 
 if (!cards.length) {
   console.log(publishAllProducts ? 'No product cards were found; no deal alert was sent.' : 'No new product card was added; no deal alert was sent.');
@@ -90,7 +92,7 @@ async function request(path, options = {}) {
   } else {
     console.log('Brevo email alerts are not configured; skipped email.');
   }
-  if (telegramToken && telegramChatId) {
+  if (telegramToken && telegramChatId && !republishLatest) {
     tasks.push((async () => {
       const priceLines = originalPrice === salePrice
         ? `\n\nCurrent price: ${salePrice}`
@@ -158,7 +160,7 @@ async function request(path, options = {}) {
   for (const card of cards) {
     const url = cardUrl(card);
     const retryAlert = card.includes('data-alert-retry="true"');
-    if ((!publishAllProducts && previousUrls.has(url) && !retryAlert) || sentUrls.has(url) || skipAsins.some((asin) => url.includes('/dp/' + asin))) continue;
+    if ((!publishAllProducts && !republishLatest && previousUrls.has(url) && !retryAlert) || sentUrls.has(url) || skipAsins.some((asin) => url.includes('/dp/' + asin))) continue;
     await sendCard(card);
     sentUrls.add(url);
   }
